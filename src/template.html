@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="__CSP__">
+<title>RUMBLE - AVIDAA platform brawler</title>
+<meta name="description" content="RUMBLE: a 4-player platform brawler by AVIDAA. Six original fighters, four arenas, bots, keyboard, touch and PS4 pads.">
+__FAV__
+<style>__CSS__</style>
+</head>
+<body class="__BODYCLS__">
+<header class="av-header" id="hdr"><a class="av-back" href="https://avidaa1.github.io/" aria-label="Back to AVIDAA home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>AVIDAA</a><span class="av-title">RUMBLE</span>__LEGLINK__</header>
+<main id="app">
+  <div id="game" hidden>
+    <div id="row1"><div id="flL" class="flk"></div><div id="cwrap"><canvas id="cv" aria-label="RUMBLE arena"></canvas></div><div id="flR" class="flk"></div></div>
+    <div id="under"><span id="hint"></span><button type="button" class="btn sm" id="bPause">Pause</button></div>
+    <div id="tL" class="tpad tL"></div><div id="tR" class="tpad tR"></div>
+  </div>
+  <div id="menu">
+    <section class="panel" id="p-main">
+      <h1 class="logo">RUMBLE</h1>
+      <p class="sub">4-player platform brawler. Six fighters, four arenas.</p>
+      <div class="grid g2">
+        <button type="button" class="btn big" data-go="p-setup" data-first="1">Play</button>
+        <button type="button" class="btn" data-go="p-settings">Settings</button>
+        <button type="button" class="btn" data-go="p-controls">Controls</button>
+        <button type="button" class="btn" data-go="p-records">Records</button>
+        <button type="button" class="btn" data-go="p-save">Save / Load</button>
+        <a class="btn" href="__OTHERHREF__" id="lnkOther">__OTHERTXT__</a>
+      </div>
+    </section>
+    <section class="panel" id="p-setup">
+      <h2>Match setup</h2>
+      <div class="setup">
+        <div class="rules">
+          <button type="button" class="btn sm" id="o-mode" data-opt="mode"></button>
+          <div class="stagerow"><button type="button" class="btn sm" id="o-stage" data-opt="stage"></button><canvas id="pvStage" width="112" height="63" aria-hidden="true"></canvas></div>
+          <p class="blurb" id="stageBlurb"></p>
+          <button type="button" class="btn sm" id="o-amount" data-opt="amount"></button>
+          <button type="button" class="btn sm" id="o-items" data-opt="items"></button>
+        </div>
+        <div class="players" id="slots"></div>
+      </div>
+      <p class="blurb" id="setupMsg"></p>
+      <div class="row"><button type="button" class="btn big" id="bStart" data-first="1">Start match</button><button type="button" class="btn" data-back="1">Back</button></div>
+    </section>
+    <section class="panel" id="p-settings">
+      <h2>Settings</h2>
+      <div class="grid g2">
+        <button type="button" class="btn" data-set="vol" data-first="1"></button><button type="button" class="btn" data-set="music"></button><button type="button" class="btn" data-set="sfx"></button>
+        <button type="button" class="btn" data-set="reduce"></button><button type="button" class="btn" data-set="text"></button><button type="button" class="btn" data-set="touch"></button><button type="button" class="btn" data-set="shake"></button>
+        <button type="button" class="btn" data-go="p-controls">Controls help</button>
+      </div>
+      <div class="row"><button type="button" class="btn" data-back="1">Back</button></div>
+    </section>
+    <section class="panel" id="p-controls">
+      <h2>Controls</h2>
+      <div class="help">
+        <div><b>Keys WASD</b><span>Move A D, drop through S, jump W or Space. J light, K heavy, L special, U dodge, I shield. Hold W or S with special for up or down specials.</span></div>
+        <div><b>Keys arrows</b><span>Arrows move and jump. Comma light, Period heavy, Slash special, Semicolon dodge, Quote shield.</span></div>
+        <div><b>PS4 pad</b><span>Stick or D-pad move. Cross jump, Square light, Triangle heavy, Circle special, L1 or L2 dodge, R1 or R2 shield. Options pauses. Menus: D-pad or stick, Cross select, Circle back, Square cycles back.</span></div>
+        <div><b>Touch</b><span>On-screen pad: arrows, Jump, Hit, Heavy, Spec, Dodge, Shield. Up plus Spec is the recovery move.</span></div>
+        <div><b>Tips</b><span>Higher percent flies further. Double jump, then your up special to get back. Items: Patch heals, Overclock speeds, Bulwark guards, Featherlight floats, Static Orb charges hits, Hot Cell explodes unless thrown.</span></div>
+      </div>
+      <div class="row"><button type="button" class="btn" data-back="1" data-first="1">Back</button></div>
+    </section>
+    <section class="panel" id="p-records">
+      <h2>Records</h2>
+      <div class="stats" id="recBox"></div>
+      <div class="badges" id="badgeBox"></div>
+      <div class="row"><button type="button" class="btn" data-back="1" data-first="1">Back</button></div>
+    </section>
+    <section class="panel" id="p-save">
+      <h2>Save and load</h2>
+      <div class="grid g3">
+        <button type="button" class="btn sm" id="bSaveFolder" data-first="1">Save to folder</button><button type="button" class="btn sm" id="bLoadFolder">Load from folder</button><button type="button" class="btn sm" id="bDownload">Download file</button>
+        <button type="button" class="btn sm" id="bUpload">Upload file</button><button type="button" class="btn sm" id="bBackup">Backup now</button><button type="button" class="btn sm" id="bResetAll">Reset records</button>
+      </div>
+      <div class="grid g3" id="bkList"></div>
+      <p class="blurb" id="folderNote"></p><p class="blurb" id="saveStatus" role="status"></p>
+      <input type="file" id="fileIn" accept=".json,application/json" hidden>
+      <div class="row"><button type="button" class="btn" data-back="1">Back</button></div>
+    </section>
+    <section class="panel" id="p-pause">
+      <h2>Paused</h2>
+      <div class="grid g1"><button type="button" class="btn big" id="bResume" data-first="1">Resume</button><button type="button" class="btn" data-go="p-settings">Settings</button><button type="button" class="btn" data-go="p-controls">Controls</button><button type="button" class="btn" data-go="p-save">Save / Load</button><button type="button" class="btn" id="bQuit">Quit to menu</button></div>
+    </section>
+    <section class="panel" id="p-results">
+      <h2 id="resTitle">Results</h2>
+      <div class="results" id="resList"></div>
+      <p class="blurb" id="resBadge"></p>
+      <div class="row"><button type="button" class="btn big" id="bRematch" data-first="1">Rematch</button><button type="button" class="btn" id="bResSetup">Setup</button><button type="button" class="btn" id="bResMenu">Main menu</button></div>
+    </section>
+  </div>
+</main>
+<footer class="av-footer"><span class="av-stamp">Last updated __STAMP__ UTC</span><span class="av-note">No tracking. Everything is made in this page.</span></footer>
+<script>__JS__</script>
+</body>
+</html>
