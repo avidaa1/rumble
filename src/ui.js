@@ -162,11 +162,12 @@ function S_inGame() { return inGame; }
 function showPanel(id, push) {
   var menu = $('menu'); if (push && curPanel) panelStack.push(curPanel);
   qa(menu, '.panel').forEach(function (p) { p.className = p.className.replace(/\bon\b/g, '').replace(/\s+$/, ''); });
-  var p = $(id); p.className += ' on'; curPanel = id; menu.hidden = false;
+  var p = $(id); p.className += ' on'; curPanel = id; menu.hidden = false; setModal(inGame);
   if (id === 'p-records') renderRecords(); if (id === 'p-save') renderBackups(); if (id === 'p-setup') refreshSetup();
   if (id === 'p-main' && !inGame) auMusic('menu');
   fitPanel(); focusFirst();
 }
+function setModal(on) { var c = document.body.className.replace(/\bmodal\b/g, '').replace(/\s+$/, ''); document.body.className = c + (on ? ' modal' : ''); }
 function goBack() {
   if (curPanel === 'p-pause') { resumeGame(); return; }
   if (curPanel === 'p-results') { toMain(); return; }
@@ -262,10 +263,9 @@ function layout() {
   $('row1').style.height = chh + 'px'; $('cwrap').style.width = cw + 'px'; $('under').style.height = (free - chh) + 'px';
   DPR = LEG ? 1 : Math.min(window.devicePixelRatio || 1, 2); cv.style.width = cw + 'px'; cv.style.height = chh + 'px'; cv.width = Math.round(cw * DPR); cv.height = Math.round(chh * DPR);
   var tl = TPAD.l, tr = TPAD.r, tc = touchWanted();
-  if (tc) { var dstL = flank ? $('flL') : $('under'), dstR = flank ? $('flR') : $('under'); if (tl.parentNode !== dstL) dstL.insertBefore(tl, dstL.firstChild); if (tr.parentNode !== dstR) dstR.appendChild(tr); if (!flank) { $('bPause').parentNode.removeChild($('bPause')); $('under').insertBefore($('bPause'), tr); } else { if ($('bPause').parentNode !== $('under')) $('under').appendChild($('bPause')); } }
-  else if ($('bPause').parentNode !== $('under')) $('under').appendChild($('bPause'));
-  if (!flank && tc) { /* keep order: tL, pause, tR */ $('under').insertBefore(tl, $('under').firstChild); $('under').insertBefore($('bPause'), tr); }
-  if (!tc) { [tl, tr].forEach(function (x) { if (x.parentNode) x.parentNode.removeChild(x); }); }
+  var bp = TPAD.p, under = $('under'), hint = $('hint');
+  if (tc) { var dstL = flank ? $('flL') : under, dstR = flank ? $('flR') : under; dstL.insertBefore(tl, dstL.firstChild); dstR.appendChild(tr); if (!flank) { under.insertBefore(bp, tr); } else under.appendChild(bp); }
+  else { [tl, tr].forEach(function (x) { if (x.parentNode) x.parentNode.removeChild(x); }); under.appendChild(bp); }
   $('hint').style.display = (!tc) ? '' : 'none';
   if (G.match) G.cam.init = true;
   if (curPanel && !$('menu').hidden) fitPanel();
@@ -273,11 +273,11 @@ function layout() {
 function hintText() {
   var s = STR.cfg.slots, parts = [];
   s.forEach(function (x, i) { if (x.ctrl === 'kb1') parts.push('P' + (i + 1) + ' WASD, J light, K heavy, L special, U dodge, I shield'); else if (x.ctrl === 'kb2') parts.push('P' + (i + 1) + ' arrows, , light, . heavy, / special, ; dodge, \' shield'); else if (x.ctrl.indexOf('pad') === 0) parts.push('P' + (i + 1) + ' pad'); });
-  return parts.join('  |  ') + '  |  Esc pause';
+  parts.push('Esc pause'); return parts.join('  |  ');
 }
-var TPAD = { l: null, r: null };
+var TPAD = { l: null, r: null, p: null };
 function buildTouch() {
-  var tl = $('tL'), tr = $('tR'); TPAD.l = tl; TPAD.r = tr;
+  var tl = $('tL'), tr = $('tR'); TPAD.l = tl; TPAD.r = tr; TPAD.p = $('bPause');
   function mk(parent, label, key, cls, aria) {
     var b = el('button', 'tb ' + cls, label); b.type = 'button'; b.setAttribute('aria-label', aria); b.setAttribute('data-t', key);
     function dn(e) { if (e.preventDefault) e.preventDefault(); TCH[key] = 1; b.className += ' hold'; auInit(e); }
@@ -298,14 +298,15 @@ function startMatch(cfg, fresh) {
   var c = JSON.parse(JSON.stringify(cfg)); c.seed = (Date.now() ^ (G.frames * 2654435761)) >>> 0;
   var m = new Match(c, true); m.provider = mkProvider(m); G.match = m; G.cam.init = true; G.acc = 0;
   document.body.className = document.body.className.replace(/\bingame\b/g, '').replace(/\s+$/, '') + ' ingame';
-  $('game').hidden = false; $('menu').hidden = true; $('hint').textContent = hintText(); layout();
+  lifeShow(false); $('game').hidden = false; $('menu').hidden = true; setModal(false); $('hint').textContent = hintText(); layout();
   auMusic(c.stage); $('bPause').focus();
 }
+function lifeShow(on) { var c = document.getElementById('av-life'); if (c) c.style.display = on ? '' : 'none'; }
 function pauseGame() { if (!inGame || !G.match || G.match.over) return; paused = true; showPanel('p-pause', false); panelStack = []; }
-function resumeGame() { paused = false; $('menu').hidden = true; curPanel = null; panelStack = []; G.last = performance.now(); try { $('bPause').focus(); } catch (e) {} }
+function resumeGame() { paused = false; $('menu').hidden = true; setModal(false); curPanel = null; panelStack = []; G.last = performance.now(); try { $('bPause').focus(); } catch (e) {} }
 function toMain() {
   inGame = false; paused = false; G.match = null; panelStack = []; $('game').hidden = true;
-  document.body.className = document.body.className.replace(/\bingame\b/g, '').replace(/\s+$/, ''); auMusic('menu'); showPanel('p-main', false); if (window.__avLifeShow) window.__avLifeShow(true);
+  document.body.className = document.body.className.replace(/\bingame\b/g, '').replace(/\s+$/, ''); auMusic('menu'); showPanel('p-main', false); lifeShow(true);
 }
 function showResults() {
   var m = G.match, R = STR.rec; G.resShown = true; var res = m.results, win = res[0];
@@ -372,7 +373,7 @@ function bind() {
   $('bPause').addEventListener('click', pauseGame);
   $('bResume').addEventListener('click', resumeGame); $('bQuit').addEventListener('click', toMain);
   $('bRematch').addEventListener('click', function () { startMatch(G.match ? G.match.cfg : STR.cfg); });
-  $('bResSetup').addEventListener('click', function () { inGame = false; paused = false; G.match = null; $('game').hidden = true; document.body.className = document.body.className.replace(/\bingame\b/g, '').replace(/\s+$/, ''); panelStack = ['p-main']; showPanel('p-setup', false); auMusic('menu'); });
+  $('bResSetup').addEventListener('click', function () { inGame = false; paused = false; G.match = null; lifeShow(true); $('game').hidden = true; document.body.className = document.body.className.replace(/\bingame\b/g, '').replace(/\s+$/, ''); panelStack = ['p-main']; showPanel('p-setup', false); auMusic('menu'); });
   $('bResMenu').addEventListener('click', toMain);
   $('bSaveFolder').addEventListener('click', saveToFolder); $('bLoadFolder').addEventListener('click', loadFromFolder); $('bDownload').addEventListener('click', downloadSave);
   $('bUpload').addEventListener('click', function () { $('fileIn').click(); }); $('fileIn').addEventListener('change', function () { uploadFile(this.files && this.files[0]); this.value = ''; });
@@ -404,6 +405,7 @@ function loadCfg() {
     for (var i = 0; i < 4; i++) { var q = c.slots && c.slots[i]; if (!q) continue; if (CTRLS.indexOf(q.ctrl) >= 0) d.slots[i].ctrl = q.ctrl; d.slots[i].fighter = fighterById(q.fighter).id; d.slots[i].level = clamp(q.level | 0, 0, 3); } STR.cfg = d; STR.touched = true; } catch (e) {}
 }
 function boot() {
+  try { auPrepare(); } catch (e) {}
   bind(); loadSaved(); loadCfg(); applySettings(); applySettingsUi(); refreshSetup(); showPanel('p-main', false); layout();
   G.raf = requestAnimationFrame(frame);
   window.__rumble = { STR: STR, G: G, AU: AU, start: startMatch, sim: simulate, layout: layout, LAY: LAY, show: showPanel, pause: pauseGame, resume: resumeGame, ring: ring, backup: backup, persist: persist, snapshot: snapshot, importText: importText, sanitize: sanitize, applyData: applyData, readCtrl: readCtrl, KEYS: KEYS, TCH: TCH, FIGHTERS: FIGHTERS, STAGES: STAGES, Match: Match,

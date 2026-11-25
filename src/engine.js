@@ -307,7 +307,8 @@ Match.prototype.stepFighter = function (f) {
     var mv = my < -0.55 ? d.spU : (my > 0.55 && d.spD ? d.spD : d.spN);
     if (mv.kind === 'rise' && f.usedUp) mv = d.spN;
     if (mv.kind === 'blink' && air && f.blinks <= 0) mv = null;
-    if (mv.kind === 'bubble' && f.bubCd > 0) mv = null;
+    if (mv && mv.kind === 'bubble' && f.bubCd > 0) mv = null;
+    if (!mv) f.buf.special = 0;
     if (mv) { f.buf.special = 0; if (Math.abs(mx) > 0.3 && mv.kind !== 'blink') f.face = mx > 0 ? 1 : -1; this.startAttack(f, mv); this.stepAttackFirst(f); this.physics(f, grav); return; }
   }
   if (f.buf.heavy > 0) { f.buf.heavy = 0; if (Math.abs(mx) > 0.3) f.face = mx > 0 ? 1 : -1; this.startAttack(f, my < -0.55 ? d.heavyU : d.heavy); this.physics(f, grav); return; }

@@ -1,21 +1,24 @@
 /* RUMBLE audio: everything synthesized with WebAudio (oscillators + noise). No samples, no files. */
 var AU = { ctx: null, master: null, mus: null, sfx: null, vol: 0.7, music: 0.6, sfxv: 0.8, track: null, timer: 0, step: 0, next: 0, nodes: 0, noiseBuf: null, lat: null, want: 'menu', on: true };
-function auInit(evt) {
-  if (AU.ctx) { if (AU.ctx.state === 'suspended') try { AU.ctx.resume(); } catch (e) {} return; }
-  var C = window.AudioContext || window.webkitAudioContext; if (!C) return;
-  var t0 = (evt && evt.timeStamp) ? evt.timeStamp : performance.now(), tH = performance.now();
-  try { AU.ctx = new C({ latencyHint: 'interactive' }); } catch (e) { try { AU.ctx = new C(); } catch (e2) { return; } }
-  var c = AU.ctx; try { c.resume(); } catch (e3) {}
-  AU.master = c.createGain(); AU.mus = c.createGain(); AU.sfx = c.createGain();
+function auPrepare() { /* build the context and graph up front (stays suspended until the first real input) */
+  if (AU.ctx) return true; var C = window.AudioContext || window.webkitAudioContext; if (!C) return false;
+  try { AU.ctx = new C({ latencyHint: 'interactive' }); } catch (e) { try { AU.ctx = new C(); } catch (e2) { return false; } }
+  var c = AU.ctx; c.onstatechange = function () { if (AU.lat) AU.lat.state = c.state; }; AU.master = c.createGain(); AU.mus = c.createGain(); AU.sfx = c.createGain();
   var comp = c.createDynamicsCompressor ? c.createDynamicsCompressor() : null;
   AU.mus.connect(AU.master); AU.sfx.connect(AU.master); if (comp) { AU.master.connect(comp); comp.connect(c.destination); } else AU.master.connect(c.destination);
   auVol();
   var nb = c.createBuffer(1, c.sampleRate, c.sampleRate), d = nb.getChannelData(0); for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; AU.noiseBuf = nb;
+  return true;
+}
+function auInit(evt) {
+  var t0 = (evt && evt.timeStamp) ? evt.timeStamp : performance.now(), first = !AU.lat;
+  if (!auPrepare()) return; var c = AU.ctx;
+  if (c.state !== 'running') { try { var pr = c.resume(); if (first && pr && pr.then) pr.then(function () { if (AU.lat) AU.lat.inputToRunning = +(performance.now() - t0).toFixed(1); }); } catch (e) {} }
+  if (!first) return;
   sfxPlay('ui_ok');
   var tS = performance.now(), base = (c.baseLatency || 0) * 1000, out = (c.outputLatency || 0) * 1000;
-  AU.lat = { inputToSchedule: +(tS - t0).toFixed(1), handlerOnly: +(tS - tH).toFixed(1), baseLatency: +base.toFixed(1), outputLatency: +out.toFixed(1), estAudible: +(tS - t0 + base + out).toFixed(1), state: c.state };
-  if (c.state === 'running' || true) auMusic(AU.want);
-  c.onstatechange = function () { if (AU.lat) AU.lat.state = c.state; };
+  AU.lat = { inputToSchedule: +(tS - t0).toFixed(1), baseLatency: +base.toFixed(1), outputLatency: +out.toFixed(1), estAudible: +(tS - t0 + base + out).toFixed(1), state: c.state, inputToRunning: null };
+  auMusic(AU.want);
 }
 function auVol() { if (!AU.ctx) return; AU.master.gain.value = AU.on ? AU.vol : 0; AU.mus.gain.value = AU.music * 0.5; AU.sfx.gain.value = AU.sfxv; }
 function tone(type, f0, f1, dur, vol, delay, dest) {
@@ -32,7 +35,7 @@ function noise(dur, vol, fq, q, delay, ftype, dest, f1) {
 }
 var SFXLAST = {};
 function sfxPlay(n) {
-  if (!AU.ctx || AU.ctx.state !== 'running' && AU.ctx.state !== 'suspended') return;
+  if (!AU.ctx || !AU.lat) return;
   var now = performance.now(); if (SFXLAST[n] && now - SFXLAST[n] < 40) return; SFXLAST[n] = now;
   switch (n) {
     case 'ui': tone('square', 660, 880, 0.05, 0.12); break;

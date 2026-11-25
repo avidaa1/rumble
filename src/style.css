@@ -69,3 +69,8 @@ body.reduce *{animation:none!important;transition:none!important}
 @media (max-width:720px){.setup{flex-direction:column;align-items:center}.rules{width:100%;max-width:420px;flex-direction:row;flex-wrap:wrap}.rules>*{flex:1 1 45%}.stagerow{flex:1 1 100%}.blurb#stageBlurb{display:none}.players{width:100%;max-width:520px}.help{grid-template-columns:1fr}.g3{grid-template-columns:1fr 1fr}.stats{grid-template-columns:repeat(2,1fr)}.av-note{display:none}}
 @media (max-height:470px){.sub,.logo+.sub{display:none}.logo{font-size:clamp(28px,8vh,48px)}.panel{gap:.3em}.help{font-size:.9em}.help div{padding:.25em .5em}}
 @media (max-height:470px) and (min-width:721px){.g2.main{grid-template-columns:repeat(3,1fr)}}
+body.modal #game .tpad,body.modal #game #bPause,body.modal #game .flk{visibility:hidden}
+body.legacy .av-back{color:#8CFFB0;box-shadow:0 0 10px rgba(255,77,154,.55),inset 0 0 0 2px rgba(124,255,107,.35)}
+body.legacy .btn{box-shadow:0 0 8px rgba(255,140,60,.25)}
+body.legacy .logo{-webkit-text-fill-color:#ff9a5c;color:#ff9a5c;background:none;filter:none;text-shadow:0 0 12px #ff4d9a;animation:none}
+body.ingame #av-life{display:none!important}

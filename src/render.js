@@ -47,7 +47,10 @@ function drawBg(g, m, cam, cw, ch, t) {
   g.save(); g.setTransform(cam.d, 0, 0, cam.d, 0, 0);
   var k = s * 1.15; /* bg is drawn 1.15x larger than the camera zoom so edges never show */
   var ox = cw / 2 - (cx - 800) * par * s - (800 - WX0) * k, oy = ch / 2 - (cy - 420) * par * s - (420 - WY0) * k;
-  g.drawImage(c, ox, oy, 2600 * k, 1900 * k);
+  var f = c.width / (2600 * k), sx0 = (0 - ox) * f, sy0 = (0 - oy) * f, sw = cw * f, sh = ch * f, dx0 = 0, dy0 = 0, dw = cw, dh = ch;
+  if (sx0 < 0) { dx0 = -sx0 / f; dw -= dx0; sw += sx0; sx0 = 0; } if (sy0 < 0) { dy0 = -sy0 / f; dh -= dy0; sh += sy0; sy0 = 0; }
+  if (sx0 + sw > c.width) { dw -= (sx0 + sw - c.width) / f; sw = c.width - sx0; } if (sy0 + sh > c.height) { dh -= (sy0 + sh - c.height) / f; sh = c.height - sy0; }
+  if (sw > 1 && sh > 1) g.drawImage(c, sx0, sy0, sw, sh, dx0, dy0, dw, dh);
   g.restore();
 }
 function drawBgLive(g, m, t) {
@@ -64,7 +67,7 @@ function drawStageFront(g, m, t) {
   /* lava */
   if (st.lava) {
     var ly = st.lava; g.fillStyle = '#ff4d10'; g.beginPath(); g.moveTo(-600, 1300); g.lineTo(-600, ly); for (var x = -600; x <= 2200; x += 40) g.lineTo(x, ly + Math.sin(x * 0.02 + t * 2) * 8 + Math.sin(x * 0.007 - t) * 6); g.lineTo(2200, 1300); g.closePath(); g.fill();
-    glow(g, 800, ly, 900, '#ff7a20', 0.35);
+    var lg = g.createLinearGradient(0, ly - 260, 0, ly); lg.addColorStop(0, 'rgba(255,120,30,0)'); lg.addColorStop(1, 'rgba(255,120,30,.3)'); g.fillStyle = lg; g.fillRect(-600, ly - 260, 2800, 260);
     g.fillStyle = 'rgba(255,220,90,.55)'; for (i = 0; i < 12; i++) g.fillRect(((i * 211 + t * 24) % 2600) - 400, ly + 18 + (i % 4) * 22, 70, 5);
   }
   for (i = 0; i < m.solids.length; i++) {
